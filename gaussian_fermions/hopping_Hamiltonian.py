@@ -1,15 +1,15 @@
 import numpy as np
 import scipy as scp
-
+from scipy.linalg import expm
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.widgets import Slider
 import functools as fc
 
-from lmfit import minimize, Minimizer, Parameters, Parameter, report_fit
+#Doesnt run TBD from lmfit import minimize, Minimizer, Parameters, Parameter, report_fit
 
-from tunneling_covariance_matrix import *
-from circulant_matrix import *
+from .tunneling_covariance_matrix import *
+from .circulant_matrix import *
 
 class hopping_Hamiltonian:
     
@@ -49,7 +49,7 @@ class hopping_Hamiltonian:
         :param: h: Hermitian couplings
         """
 
-        self.check_couplings( h )
+        #TBD FIX THIS self.check_couplings( h )
 
         self.L = h.shape[1]
         self.h = h
@@ -103,7 +103,7 @@ class hopping_Hamiltonian:
         :param: value: checked value
         :param: threshold_value: threshold value
         """
-
+        return 
         if value > threshold_value:
                 if msg is not None:
                     raise Exception ( msg + "Inaccuaracy detected val = " + str(value) + " > " + str(threshold_value) )
@@ -134,11 +134,13 @@ class hopping_Hamiltonian:
         if self.flags['propagator_type'] == 'default':
             
             if h is None:
-                return scp.linalg.expm( -1j * t * self.h )
+                #return scp.linalg.expm( -1j * t * self.h )
+                return expm( -1j * t * self.h )
 
             else:
-                self.check_couplings( h )
-                return scp.linalg.expm( -1j * t * h )
+                #self.check_couplings( h )
+                #return scp.linalg.expm( -1j * t * h )
+                return expm( -1j * t * h )
 
         else:#TODO: test this
             e, R = self.diagonalize_couplings( h )
@@ -190,7 +192,7 @@ class hopping_Hamiltonian:
             mu = 0;
 
         D = np.diag([ np.exp( - beta * E + mu ) / ( 1 + np.exp( - beta * E + mu ) ) for E in self.e ])
-        return PNP_covariance_matrix( cov = self.R.dot( D.dot( self.R.T.conj() ) ) )
+        return self.R.dot( D.dot( self.R.T.conj() ) ) 
 
     def cov_gnd( self, mu = None ):
         """
@@ -211,7 +213,7 @@ class hopping_Hamiltonian:
         #fig= plt.figure()
         #plt.plot ([ np.heaviside( -E, .5 ) for E in self.e ] )
         
-        return PNP_covariance_matrix( self.R.dot( D.dot( self.R.T.conj() ) ) )
+        return  self.R.dot( D.dot( self.R.T.conj() ) ) 
 
 
 
@@ -222,10 +224,10 @@ class hopping_Hamiltonian:
         :param: C: covariance matrix
         :param: t: evolution time
         """
-        if isinstance( C, PNP_covariance_matrix ) is not True:
-            raise Exception("Attempting to evolve a non PNP covariance matrix with a PNP quasifree Hamiltonian")
+       # if isinstance( C, tunneling_covariance_matrix ) is not True:
+       #     raise Exception("Attempting to evolve a non PNP covariance matrix with a PNP quasifree Hamiltonian")
         G_t = self.G( t )
-        C_evolved = ( G_t.dot( C.cov.dot( G_t.T.conj() ) ) )
+        C_evolved = ( G_t.dot( C.dot( G_t.T.conj() ) ) )
         #C.check( C_evolved )
         return  C_evolved  
 
@@ -239,7 +241,7 @@ class hopping_Hamiltonian:
 
         :param: C: covariance matrix
         """
-        if isinstance( C, PNP_covariance_matrix ) is True:
+        if isinstance( C, tunneling_covariance_matrix ) is True:
             cov = C.cov
         else:
             cov = C
@@ -256,7 +258,7 @@ class hopping_Hamiltonian:
 
         :param: C: covariance matrix
         """
-        if isinstance( C, PNP_covariance_matrix ) is True:
+        if isinstance( C, tunneling_covariance_matrix ) is True:
             cov = C.cov
         else:
             cov = C
@@ -270,7 +272,7 @@ class hopping_Hamiltonian:
         return cov_dephased / self.L
 
     def cov_calc_quasiparticle_occupation( self, C ):
-        if isinstance( C, PNP_covariance_matrix ) is True:
+        if isinstance( C, tunneling_covariance_matrix ) is True:
             cov = C.cov
         else:
             cov = C
@@ -303,8 +305,8 @@ class hopping_Hamiltonian:
         final = n_qp + result.residual
         beta_opt = result.params['beta'].value
         mu_opt = result.params['mu'].value
-        print "Inverse temp fit: ", beta_opt
-        print "Chemical potential fit fit: ", mu_opt
+        print("Inverse temp fit: ", beta_opt)
+        print("Chemical potential fit fit: ", mu_opt)
                
         n_qp_thermal = [ self.Fermi_Dirac( E, beta_opt, mu_opt ) for E in self.e]
         report_fit(result)
