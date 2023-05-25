@@ -332,7 +332,7 @@ class hopping_Hamiltonian:
             return abs( self.cov_evolve( C, t )  )
         self.show_matrix_slider( wrapper, T_min = 0, T_max = T, slider_label = 'Time t', show_flag = show_flag)
 
-    def show_propagator(self, T_min = 0, T_max = None ):
+    def show_propagator(self, T_min = 0, T_max = None, show_flag = 1 ):
         """
         Shows the propagator matrix $G(t)$ with a time-slider.
 
@@ -342,7 +342,7 @@ class hopping_Hamiltonian:
             T_max = self.L
         def wrapper( t ):
             return abs( self.G( t ) )
-        self.show_matrix_slider( wrapper, T_min = T_min, T_max = T_max )
+        self.show_matrix_slider( wrapper, T_min = T_min, T_max = T_max,  slider_label = 'Time t', show_flag = 1 )
 
     def show_cov_thermal(self, beta_max ):
         """
