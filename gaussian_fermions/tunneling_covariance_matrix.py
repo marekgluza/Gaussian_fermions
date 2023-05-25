@@ -1,5 +1,5 @@
 import numpy as np
-from hopping_Hamiltonian import *
+from .hopping_Hamiltonian import *
 
 class tunneling_covariance_matrix:
     
@@ -164,6 +164,7 @@ class tunneling_covariance_matrix:
         :param: slider_label: slider label
         """
 
+
         fig = plt.figure()
         ax = fig.add_subplot(111)
         fig.subplots_adjust(left=0.25, bottom=0.25)
@@ -182,27 +183,19 @@ class tunneling_covariance_matrix:
         plt.show()
 
     @staticmethod
-    def show_cov( cov, inset_size = None, save_path = None, title = None, show_flag = None ):
+    def show_cov( cov, inset_cov = None, inset_size = None, save_path = None, title = None, show_flag = None, panel_label = None ):
         
         L = cov.shape[0]
-        # position of the inset
-        inset_pos_x = 0.52
-        inset_pos_y = 0.17
-        inset_height = 0.28
-        inset_width = 0.28
-
-        font_size = 22
         
         # outer plot
-        fig = plt.figure( figsize = ( 9, 6.75 ) )
+        fig = plt.figure( figsize = ( 11, 12 ) )
         ax = fig.add_subplot(111)
-        if title == None:
-            title = r'$\Gamma^{(\beta)}$'
-        plt.title( title )
+        if title is not None:
+            plt.title( title )
         plt.xlim((1,L))
         plt.ylim((1,L))
-        plt.xlabel( 'Lattice site $x$', fontsize = font_size )
-        plt.ylabel( 'Lattice site $y$', fontsize = font_size )
+        plt.xlabel( 'Lattice site $x$' )
+        plt.ylabel( 'Lattice site $y$' )
         #plt.clabel = '|\Gamma_{'+str( int(L/2) )+',s}(t)|'
         im = ax.imshow( cov, cmap='RdBu', aspect='equal', interpolation = None, extent = [ 1, L, L, 1])
         
@@ -213,17 +206,38 @@ class tunneling_covariance_matrix:
         range_plot = np.max( np.abs( cov ) )
         cbar.set_clim( -range_plot, range_plot )
         #cbar.set_label( r'$\Gamma^{(\beta)}_{x,y}$', fontsize = font_size )
-        
-        if inset_size is not None:
+        if panel_label is not None:
+            plt.text( -L/10, L, panel_label)
+        if inset_size is not None or inset_cov is not None:
+            # position of the inset
+            inset_pos_x = 0.18
+            inset_pos_y = 0.5475
+            #inset_pos_x = 0.52
+            #inset_pos_y = 0.17
+            inset_height = 0.3
+            inset_width = 0.3
+
             #inset 
             inset = fig.add_axes( [ inset_pos_x, inset_pos_y, inset_width, inset_height ] )
-            im2 = inset.imshow( cov[0:inset_size,0:inset_size], extent = [ 1, inset_size, inset_size, 1], cmap='RdBu', aspect='equal', interpolation = None)
+            if inset_cov is not None:
+                im2 = inset.imshow( inset_cov, extent = [ 1, L, L, 1], cmap='RdBu', aspect='equal', interpolation = None)
+                plt.xlim((1,L))
+                plt.ylim((1,L))
+                divider2 = make_axes_locatable(inset)
+                cax2 = divider2.append_axes("right", size="2.5%", pad=0.05)
+                cbar2 = plt.colorbar(im2, cax=cax2)
+                range_plot = np.max( np.abs( inset_cov ) )
+                cbar2.set_clim( -range_plot, range_plot )
+
+            else:
+                im2 = inset.imshow( cov[0:inset_size,0:inset_size], extent = [ 1, inset_size, inset_size, 1], cmap='RdBu', aspect='equal', interpolation = None)
+                inset.set_xlim( ( 1, inset_size ) )
+                inset.set_ylim( ( 1, inset_size) )
+                im2.set_clim( -range_plot, range_plot )
             #divider2 = make_axes_locatable(inset)
             #cax2 = divider2.append_axes("right", size="2.5%", pad=0.05)
             #cbar2 = plt.colorbar(im2, cax=cax2)
-            im2.set_clim( -range_plot, range_plot )
-            inset.set_xlim( ( 1, inset_size ) )
-            inset.set_ylim( ( 1, inset_size) )
+            #im2.set_clim( -range_plot, range_plot )
             #inset.set_xlabel( 'x', fontsize= font_size )
             #inset.set_ylabel( 'y', fontsize= font_size )
         
